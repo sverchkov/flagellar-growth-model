@@ -1,0 +1,3 @@
+Run "make" to make the binary (named "run").
+Calling "run" without parameters (or incorrectly) prints out a description on
+how to use it.
