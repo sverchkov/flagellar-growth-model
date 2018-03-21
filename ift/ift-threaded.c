@@ -13,9 +13,12 @@
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "SFMT-src-1.3/SFMT.h"
 #include "ydarrays.c"
 
+/* For how many threads? */
+#define N_THREADS 8
 
 typedef struct{
 	double lambda_p;
@@ -206,6 +209,39 @@ l_array - Array of lengths corresponding to the times in t_array.
 }
 
 
+
+/* Thread-related:
+ * RunArgs - struct that stores arguments passed to and from the thread
+ * function.
+ * one_run - function that makes one run (for the pthread).
+ */
+typedef struct{
+	Parameters p;
+	InitialConditions ic;
+	int * result; /* The result goes here */
+}RunArgs;
+
+void * one_run( void * argptr ){
+
+	int j;
+	RunArgs * args = argptr;
+	/* Initial conditions */
+	double t = 0; /* time */
+	int x[args->ic.n_ifts]; /* IFT positions */
+
+	   /* Sets Initial positions of IFT's and lengths. */
+	   for( j = 0; j < args->ic.n_ifts; j++ )
+		   x[j] = args->ic.x0[j];
+	   *(args->result) = args->ic.length0;
+
+	   while( t < args->ic.time_limit )
+	      ift_step( &(args->p), args->ic.time_limit, &t, args->result, x,
+		args->ic.n_ifts );
+	   free( argptr );
+	return NULL;
+}
+
+
 void ift_ensemble(
    const Parameters * const p,
    const InitialConditions * const ic,
@@ -230,22 +266,26 @@ l_array - Array of lengths corresponding to the different runs.
 */
 {
 	FILE * out;
-	unsigned int i, j;
+	unsigned int i,j;
 
-	int length; /*Current flagellum length*/
-	int x[ic->n_ifts]; /*IFT positions*/
-	double t; /*Current time*/
+	/*int length; **Current flagellum length**
+	double t; **Current time*/
+
+	RunArgs thread_args, *argsptr;
+	pthread_t threads[N_THREADS];
 
 	/*** Initialization ***/
 
 	/* Random number generator seed */
 	seed();
 
+	/* Initial conditions for all threads */
+	thread_args.p = *p; thread_args.ic = *ic; thread_args.result=NULL;
 
 	/*** Main Loop ***/
-	for( i = 0; i < n_runs; ){
+	for( i = 0; i < n_runs; i += N_THREADS ){
 
-	   /* Sets Initial positions of IFT's and lengths. */
+	   /* Sets Initial positions of IFT's and lengths. **
 	   for( j = 0; j < ic->n_ifts; j++ ) x[j] = ic->x0[j];
 	   length = ic->length0;
 
@@ -254,16 +294,32 @@ l_array - Array of lengths corresponding to the different runs.
 	      ift_step( p, ic->time_limit, &t, &length, x, ic->n_ifts );
 
 	   l_array[i] = length;
+	   */
 
-	   ++i;
+	   for( j=0; j<N_THREADS && i+j < n_runs; j++ ){
 
-	   /* Write backup * -- IGNORED
-	   if( i%10 == 0 && (out = fopen( backup, "w" )) != NULL ){
-	      fwrite( &i, sizeof(unsigned int), 1, out);
-	      fwrite( l_array, sizeof(int), i, out);
-	      fclose( out );
-	   }*/
-	   printf("\nRun %4d complete.", i);
+		argsptr = malloc( sizeof( RunArgs ) );
+		/*Need to remember to deallocate inside thread*/
+		*argsptr = thread_args;
+		argsptr->result = &( l_array[i+j] );
+		pthread_create(
+			&( threads[j] ), NULL, one_run, argsptr );
+
+	   }
+
+	   /* Write backup */
+	   if( i>0 && i%10 == 0 && (out = fopen( backup, "w" )) != NULL ){
+
+		fwrite( &i, sizeof(unsigned int), 1, out);
+		fwrite( l_array, sizeof(int), i, out);
+		fclose( out );
+	   }
+
+	   /* Wait for threads */
+	   for( j=0; j<N_THREADS && i+j < n_runs; j++ ){
+	   	pthread_join( threads[j], NULL );
+	   }
+
 	}
 
 	printf("\nFinished.\n");
