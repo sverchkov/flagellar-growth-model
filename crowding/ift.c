@@ -14,7 +14,7 @@
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
-#include "SFMT-src-1.3/SFMT.c"
+#include "../SFMT-src-1.3/SFMT.c"
 #include "ydarrays.c"
 
 
