@@ -13,7 +13,7 @@
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
-#include "SFMT-src-1.3/SFMT.h"
+#include "../SFMT-src-1.3/SFMT.h"
 #include "ydarrays.c"
 
 

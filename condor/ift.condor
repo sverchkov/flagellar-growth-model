@@ -1,0 +1,16 @@
+# Standard IFT simulation condor job
+
+universe = vanilla
++WantFlocking = True
++WantGlideIn = True
+
+executable = $(exec)
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = params/$(params),ic/$(ic)
+transfer_output_remaps = "trajectory.txt=$(output)/$(Process).txt"
+
+arguments = -a $(params) -b $(ic) 15000 -a trajectory.txt
+
+queue 2

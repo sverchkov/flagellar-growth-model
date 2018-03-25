@@ -1,0 +1,3 @@
+JOB STANDARD-SLOW condor/ift.condor
+VARS STANDARD-SLOW exec="ift/run" params="dense_model_slow.txt" ic="many.dat" output="standard-slow-runs"
+
