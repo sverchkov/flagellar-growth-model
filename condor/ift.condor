@@ -13,4 +13,7 @@ transfer_output_remaps = "trajectory.txt=$(output)/$(Process).txt"
 
 arguments = -a $(params) -b $(ic) 15000 -a trajectory.txt
 
+request_memory = 5000M
+request_disk = 500M
+
 queue 2
