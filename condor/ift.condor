@@ -4,16 +4,20 @@ universe = vanilla
 +WantFlocking = True
 +WantGlideIn = True
 
+#log = $(outdir)/$(Process).log
+
 executable = $(exec)
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files = params/$(params),ic/$(ic)
-transfer_output_remaps = "trajectory.txt=$(output)/$(Process).txt"
+transfer_output_files = trajectory.txt
+transfer_output_remaps = "trajectory.txt=$(outdir)/$(Process).txt"
 
 arguments = -a $(params) -b $(ic) 15000 -a trajectory.txt
 
-request_memory = 5000M
-request_disk = 500M
+request_memory = 50M
+request_disk = 100M
 
-queue 2
+queue 5000
+

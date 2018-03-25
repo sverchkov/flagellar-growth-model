@@ -1,3 +1,12 @@
 JOB STANDARD-SLOW condor/ift.condor
-VARS STANDARD-SLOW exec="ift/run" params="dense_model_slow.txt" ic="many.dat" output="standard-slow-runs"
+VARS STANDARD-SLOW exec="ift/run" params="dense_model_slow.txt" ic="many.dat" outdir="standard-slow-runs"
+
+JOB STANDARD-FAST condor/ift.condor
+VARS STANDARD-FAST exec="ift/run" params="dense_model.txt" ic="many.dat" outdir="standard-fast-runs"
+
+JOB CROWDING-SLOW condor/ift.condor
+VARS CROWDING-SLOW exec="crowding/run" params="dense_model_slow.txt" ic="many.dat" outdir="crowding-slow-runs"
+
+JOB CROWDING-FAST condor/ift.condor
+VARS CROWDING-FAST exec="crowding/run" params="dense_model.txt" ic="many.dat" outdir="crowding-fast-runs"
 
