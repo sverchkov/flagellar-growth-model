@@ -83,7 +83,7 @@ The change in length (+1, 0, or -1)
 	int i, j; double temp, temp2;
 	double tau = 0;
 	double rate_sum = 0;
-	double rates[n_ifts];
+	double rates[n_ifts+1];
 	short length_change = 0;
 
 
@@ -211,6 +211,9 @@ void ift_ensemble(
    const InitialConditions * const ic,
    const unsigned int n_runs,
    int l_array[],
+   int events_array[],
+   int assemblies_array[],
+   int disassemblies_array[],
    const char * backup)
 /*void ift_ensemble( const Parameters * const p, const InitialConditions * const ic,
 	const unsigned int n_runs, int l_array[])
@@ -226,6 +229,9 @@ n_runs - the number of times to run the simulation.
 
 Output:
 l_array - Array of lengths corresponding to the different runs.
+events_array - Array of event counts per run.
+assemblies_array - Array of assembly events per run.
+disassemblies_array - Array of disassembly events per run.
 
 */
 {
@@ -235,6 +241,8 @@ l_array - Array of lengths corresponding to the different runs.
 	int length; /*Current flagellum length*/
 	int x[ic->n_ifts]; /*IFT positions*/
 	double t; /*Current time*/
+        int change; /*Change in length*/
+        int assembly_count, disassembly_count, event_count;
 
 	/*** Initialization ***/
 
@@ -250,9 +258,22 @@ l_array - Array of lengths corresponding to the different runs.
 	   length = ic->length0;
 
 	   t = 0;
-	   while( t < ic->time_limit )
-	      ift_step( p, ic->time_limit, &t, &length, x, ic->n_ifts );
+           event_count = 0;
+           assembly_count = 0;
+           disassembly_count = 0;
 
+	   while( t < ic->time_limit ){
+              change = ift_step( p, ic->time_limit, &t, &length, x, ic->n_ifts );
+
+              if( change > 0 ) ++assembly_count;
+              if( change < 0 ) ++disassembly_count;
+              ++event_count;
+           }
+
+
+           events_array[i] = event_count;
+           assemblies_array[i] = assembly_count;
+           disassemblies_array[i] = disassembly_count;
 	   l_array[i] = length;
 
 	   ++i;

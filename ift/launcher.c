@@ -31,7 +31,7 @@ int main( int argc, char* argv[]){
 
    /*Variables to store simulation output*/
    DoubleArray t_array;
-   IntArray l_array;
+   IntArray l_array, ecounts_array, acounts_array, dcounts_array;
 
    /*Variables to represent simulation input*/
    InitialConditions ic;
@@ -180,22 +180,32 @@ int main( int argc, char* argv[]){
       n_runs = atoi( argv[8] );
 
       l_array = iaCreate( NULL, n_runs );
+      ecounts_array = iaCreate( NULL, n_runs );
+      acounts_array = iaCreate( NULL, n_runs );
+      dcounts_array = iaCreate( NULL, n_runs );
 
-      ift_ensemble( &p, &ic, n_runs, l_array.contents, argv[9] );
+      ift_ensemble( &p, &ic, n_runs, l_array.contents, ecounts_array.contents, acounts_array.contents, dcounts_array.contents, argv[9] );
 
       /* Write to output file */
-      if( output_ascii )
+      if( output_ascii ){
+            fprintf( outfile, "Length    \tEvents    \tAssemblies\tDisassemblies\n" );
 	
          for( i = 0; i < l_array.length; i++ )
-            fprintf( outfile, "%10d\n", iaGet( l_array, i ) );
+            fprintf( outfile, "%10d\t%10d\t%10d\t%10d\n", iaGet( l_array, i ),
+                                                          iaGet( ecounts_array, i ),
+                                                          iaGet( acounts_array, i ),
+                                                          iaGet( dcounts_array, i ) );
 		
-      else{
+      }else{
 
          fwrite( &l_array.length, sizeof(unsigned int), 1, outfile);
          fwrite( l_array.contents, sizeof(int), l_array.length, outfile);
       }
 	
       iaDestroy( l_array );
+      iaDestroy( ecounts_array );
+      iaDestroy( acounts_array );
+      iaDestroy( dcounts_array );
       return 0;
    }
 
