@@ -1,0 +1,6 @@
+JOB STANDARD condor/ift-summary.condor
+VARS STANDARD exec="ift/run" params="nbar2M.txt" ic="many.dat" outdir="standard-nbar2m"
+
+JOB CROWDING condor/ift-summary.condor
+VARS CROWDING exec="crowding/run" params="nbar2M.txt" ic="many.dat" outdir="crowding-nbar2m"
+
